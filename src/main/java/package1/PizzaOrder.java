@@ -54,7 +54,7 @@ public class PizzaOrder implements Comparable<PizzaOrder>, Serializable {
     public Instant placeTime;
     public float addrLon;
     public float addrLat;
-    public short pizzaType;
+    public long pizzaType;
     public String status;
 
     @Override

@@ -18,11 +18,17 @@
 
 package package1;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.source.SourceFunction;
+import org.apache.flink.streaming.connectors.gcp.pubsub.PubSubSource;
+import org.apache.flink.streaming.connectors.gcp.pubsub.common.PubSubDeserializationSchema;
 import org.apache.flink.table.data.GenericRowData;
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.data.StringData;
 
 
 /**
@@ -37,22 +43,30 @@ import org.apache.flink.table.data.RowData;
  * <p>If you change the name of the main class (with the public static void main(String[] args))
  * method, change the respective entry in the POM.xml file (simply search for 'mainClass').
  */
+
+
 public class DataStreamJob {
 
 	public static void main(String[] args) throws Exception {
 		// Sets up the execution environment, which is the main entry point
 		// to building Flink applications.
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
+//		PubSubDeserializationSchema<JsonNode> deserializer = new CustomPubSubDeserializationSchema();
+//		SourceFunction<JsonNode> pubSubSource = PubSubSource.newBuilder()
+//				.withDeserializationSchema(deserializer)
+//				.withProjectName("wired-record-443707-u8")
+//				.withSubscriptionName("flink-test-topic-sub")
+//				.withCredentials()
+//				.build();
+//		DataStream<JsonNode> orders =env.addSource(pubSubSource);
+//		orders.print();
 		DataStream<PizzaOrder> orders =env.addSource(new PizzaOrderGenerator());
 
-		//orders.print();
+//		orders.print();
 
 
-		DataStream<PizzaOrder> filteredOrders = orders
-				// keep only those rides and both start and end in NYC
-				.filter(new ShippedFilter());
-		  filteredOrders.print();
+		DataStream<PizzaOrder> filteredOrders = orders.filter(new ShippedFilter());
+//		filteredOrders.print();
 
 		//Step-1 this is step 1 for icebergSinkUtil.java logic
 		// Now we have to Convert PizzaOrder to RowData because iceberg support row data
@@ -63,38 +77,17 @@ public class DataStreamJob {
 			row.setField(2, order.addrLon);
 			row.setField(3, order.addrLat);
 			row.setField(4, order.pizzaType);
-			row.setField(5, order.status);
+			row.setField(5, StringData.fromString(order.status));
 			return row;
 		});
 
 		// Call the Iceberg sink utility to write to Iceberg
 		IcebergSinkUtil.writeToIceberg(
 				rowDataStream,
-				"gs://cloudsql-functions-golang2/iceberg_warehouse", // Catalog path
+				"gs://cloudsql-functions-golang2/warehouse", // Catalog path
 				"cloudsql-functions-golang2",                        // Bucket name
 				"pizza_orders"                             // Table name
 		);
-
-
-		/*
-		 * Here, you can start creating your execution plan for Flink.
-		 *
-		 * Start with getting some data from the environment, like
-		 * 	env.fromSequence(1, 10);
-		 *
-		 * then, transform the resulting DataStream<Long> using operations
-		 * like
-		 * 	.filter()
-		 * 	.flatMap()
-		 * 	.window()
-		 * 	.process()
-		 *
-		 * and many more.
-		 * Have a look at the programming guide:
-		 *
-		 * https://nightlies.apache.org/flink/flink-docs-stable/
-		 *
-		 */
 
 		// Execute program, beginning computation.
 		env.execute("Flink Java API Skeleton");

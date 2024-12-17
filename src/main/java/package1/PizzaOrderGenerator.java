@@ -5,7 +5,6 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 /**
@@ -31,7 +30,7 @@ public class PizzaOrderGenerator implements SourceFunction<PizzaOrder> {
         while (running&&id<100) {
 
             // generate a batch of PizzaOrders events
-            List<PizzaOrder> Orders = new ArrayList<PizzaOrder>(BATCH_SIZE);
+            List<PizzaOrder> Orders = new ArrayList<>(BATCH_SIZE);
             for (int i = 1; i <= BATCH_SIZE; i++) {
                 PizzaOrder order = new PizzaOrder(id + i);
                 Orders.add(order);

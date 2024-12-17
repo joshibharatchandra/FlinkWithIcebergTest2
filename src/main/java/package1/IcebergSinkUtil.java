@@ -5,6 +5,7 @@ import org.apache.flink.table.data.RowData;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.iceberg.flink.TableLoader;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.flink.sink.FlinkSink;
 import org.apache.iceberg.types.Types;
@@ -18,32 +19,26 @@ public class IcebergSinkUtil {
                 Types.NestedField.required(2, "place_time", Types.LongType.get()),
                 Types.NestedField.required(3, "addr_lon", Types.FloatType.get()),
                 Types.NestedField.required(4, "addr_lat", Types.FloatType.get()),
-                Types.NestedField.optional(5, "pizza_type", Types.StringType.get()),
+                Types.NestedField.optional(5, "pizza_type", Types.LongType.get()),
                 Types.NestedField.optional(6, "status", Types.StringType.get())
         );
-
-        // Disable security manager checks (for non-secure environments)
+        String db = "default";
 
         // Step-3 Configure Hadoop catalog
         Configuration hadoopConf = new Configuration();
-        hadoopConf.set("hadoop.security.authentication", false);
-
-
-        hadoopConf.set("spark.hadoop.fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
-        hadoopConf.set("spark.hadoop.fs.gs.auth.service.account.json.keyfile", "C:/Users/bhara/Downloads/your-service-account-key.json");
-        hadoopConf.set("fs.defaultFS", "gs://" + bucketName);
-        hadoopConf.set("google.cloud.auth.service.account.enable", "true");
-        hadoopConf.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
 
         HadoopCatalog catalog = new HadoopCatalog(hadoopConf, catalogPath);
-
         // Step -4 Define the table identifier
-        TableIdentifier tableId = TableIdentifier.of("default", tableName);
-
+        TableIdentifier tableId = TableIdentifier.of(db, tableName);
+        if(!catalog.tableExists(tableId)){
+            catalog.createTable(tableId, schema);
+        }
+        TableLoader tableLoader = TableLoader.fromHadoopTable(catalogPath + "/" + db + "/" + tableName, hadoopConf);
         //Step 5-  Write the data to Iceberg
         FlinkSink.forRowData(dataStream)
+                .tableLoader(tableLoader)
                 .table(catalog.loadTable(tableId))
-                .overwrite(false) // Set to true if you want to overwrite the table
+                .overwrite(true)// Set to true if you want to overwrite the table
                 .build();
     }
 }

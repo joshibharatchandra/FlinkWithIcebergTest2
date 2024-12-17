@@ -30,7 +30,7 @@ under the License.
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<flink.version>1.20.0</flink.version>
-		<target.java.version>1.8</target.java.version>
+		<target.java.version>11</target.java.version>
 		<scala.binary.version>2.12</scala.binary.version>
 		<maven.compiler.source>${target.java.version}</maven.compiler.source>
 		<maven.compiler.target>${target.java.version}</maven.compiler.target>
@@ -58,7 +58,7 @@ under the License.
 			<groupId>org.apache.flink</groupId>
 			<artifactId>flink-streaming-java</artifactId>
 			<version>${flink.version}</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
@@ -109,11 +109,6 @@ under the License.
 		</dependency>
 
 		<!-- Iceberg Core Dependencies -->
-		<dependency>
-			<groupId>org.apache.iceberg</groupId>
-			<artifactId>iceberg-core</artifactId>
-			<version>1.4.0</version>
-		</dependency>
 		<!-- Hadoop for Iceberg HadoopCatalog -->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -137,11 +132,6 @@ under the License.
 			<artifactId>flink-table-runtime</artifactId>
 			<version>${flink.version}</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-storage</artifactId>
-			<version>1.113.3</version>
 		</dependency>
 		<!-- Iceberg dependencies -->
 		<!-- https://mvnrepository.com/artifact/org.apache.iceberg/iceberg-flink -->
@@ -197,24 +187,17 @@ under the License.
 			<artifactId>iceberg-gcp-bundle</artifactId>
 			<version>1.6.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>RELEASE</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>7.10.2</version>
-			<scope>compile</scope>
-		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-core -->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
 			<version>1.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-gcp-pubsub</artifactId>
+			<version>3.1.0-1.19</version>
 		</dependency>
 
 
